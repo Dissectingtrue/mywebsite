@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="user.css">
+    <style>
+        .contact-info {
+            font-size: 14px;
+            color: white;
+            text-align: right;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Добро пожаловать</h1>
+        <div class="contact-info">
+            <p>Тех. поддержка: +7 (966) 506-07-18</p>
+            <p>Email: support@example.com</p>
+        </div>
+    </header>
+    <div class="container">
+        <h2>Список магазинов</h2>
+        <div id="shops-container">
+            <!-- Магазины будут добавлены здесь -->
+        </div>
+        <a href="/login" class="logout-link">Выход</a>
+    </div>
+
+    <script>
+        // Функция для загрузки списка магазинов
+        async function loadShops() {
+            try {
+                const response = await fetch('/shops');
+                const shops = await response.json();
+                const shopsContainer = document.getElementById('shops-container');
+                shopsContainer.innerHTML = ''; // Очищаем контейнер перед добавлением новых магазинов
+                shops.forEach(shop => {
+                    const shopItem = document.createElement('div');
+                    shopItem.className = 'shop-item';
+
+                    const shopLink = document.createElement('a');
+                    shopLink.textContent = shop.name;
+                    shopLink.setAttribute('href', `/shop.html?id=${shop.id}`); // Устанавливаем ссылку на страницу магазина с его идентификатором
+                    shopLink.className = 'shop-link';
+
+                    shopItem.appendChild(shopLink);
+                    shopsContainer.appendChild(shopItem);
+                });
+            } catch (error) {
+                console.error('Error loading shops:', error);
+            }
+        }
+
+        // При загрузке страницы вызываем функцию загрузки списка магазинов
+        window.onload = loadShops;
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+﻿header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+h1 {
+    margin: 20px 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0px;
+    padding: 0px;
+    background-color: #f4f4f4;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0px;
+    display: flex;
+    flex-wrap: wrap; /* Обертка элементов по нескольким рядам */
+}
+
+li {
+    background: #fff;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px; /* Скругленные углы */
+    display: flex;
+    flex-direction: column; /* Расположение в столбец */
+    flex-grow: 1;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1); /* Тень */
+    max-width: 150px; /* Максимальная ширина элемента */
+}
+
+
+/* Стили для информации о товаре */
+.product-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column; /* Расположение в столбец */
+}
+
+/* Стили для названия товара */
+.product-name {
+    font-weight: bold;
+    margin-bottom: 5px; /* Отступ снизу */
+}
+
+/* Стили для цены и количества товара */
+.product-details {
+    margin-top: auto; /* Отступ сверху */
+    text-align: center; /* Выравнивание текста по центру */
+}
+
+/* Стили для кнопки купить */
+button {
+    margin: 10px auto; /* Центрирование кнопки */
+    padding: 5px 50px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+}
+
+    button:hover {
+        background-color: #218838;
+    }
+
+/* Стили при наведении на товар */
+li:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+/* Стили для кнопки выход */
+.logout-button {
+    margin: 20px auto; /* Центрирование кнопки */
+    padding: 10px 20px;
+    background-color: #dc3545; /* Красный цвет */
+    color: #fff;
+    border: none;
+    border-radius: 5px; /* Скругленные углы */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+    text-decoration: none; /* Убираем подчеркивание ссылки */
+    text-align: center; /* Выравнивание текста по центру */
+    width: fit-content; /* Ширина кнопки зависит от содержимого */
+}
+
+    .logout-button:hover {
+        background-color: #c82333; /* Темнокрасный цвет при наведении */
+    }

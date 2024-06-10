@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Товары в магазине</title>
+    <link rel="stylesheet" type="text/css" href="shop.css">
+</head>
+<body>
+    <header>
+        <h1 id="shopName">Shop Товары</h1>
+    </header>
+    <ul id="productList"></ul>
+    <a href="/user.html" class="logout-button">Назад</a>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shopId = urlParams.get('id');
+            const shopNameElem = document.getElementById('shopName');
+            const productList = document.getElementById('productList');
+
+            if (!shopId) {
+                alert('Shop ID is missing');
+                return;
+            }
+
+            async function fetchAndDisplayProducts() {
+                const productsResponse = await fetch(`/ushop/${shopId}`);
+                if (productsResponse.ok) {
+                    const products = await productsResponse.json();
+                    productList.innerHTML = ''; // Очистка списка продуктов
+                    products.forEach(product => {
+                        const listItem = document.createElement('li');
+
+                        const productInfo = document.createElement('div');
+                        productInfo.className = 'product-info';
+
+                        // Название продукта
+                        const productName = document.createElement('div');
+                        productName.className = 'product-name';
+                        productName.textContent = product.name;
+                        productInfo.appendChild(productName);
+
+                        // Цена продукта
+                        const productPrice = document.createElement('div');
+                        productPrice.textContent = `Цена: ₽${product.price}`;
+                        productInfo.appendChild(productPrice);
+
+                        // Количество продукта
+                        const productCount = document.createElement('div');
+                        productCount.textContent = `Кол-во: ${product.count}`;
+                        productInfo.appendChild(productCount);
+
+                        listItem.appendChild(productInfo);
+
+                        // Кнопка "Купить"
+                        const buyButton = document.createElement('button');
+                        buyButton.textContent = 'Купить';
+                        buyButton.addEventListener('click', async () => {
+                            const buyResponse = await fetch(`/buy/${shopId}/${product.id}`, { method: 'POST' });
+                            if (buyResponse.ok) {
+                                const updatedProducts = await buyResponse.json(); // Получение обновленного списка продуктов
+                                displayProducts(updatedProducts); // Отображение обновленного списка продуктов
+                                alert('Товар успешно куплен');
+                            } else {
+                                const errorMessage = await buyResponse.text();
+                                alert(`Не удалось купить товар: ${errorMessage}`);
+                            }
+                        });
+                        listItem.appendChild(buyButton);
+
+                        productList.appendChild(listItem);
+                    });
+                } else {
+                    productList.textContent = 'Не удалось загрузить продукты';
+                }
+            }
+
+            function displayProducts(products) {
+                productList.innerHTML = '';
+                products.forEach(product => {
+                    const listItem = document.createElement('li');
+
+                    const productInfo = document.createElement('div');
+                    productInfo.className = 'product-info';
+
+                    const productName = document.createElement('div');
+                    productName.className = 'product-name';
+                    productName.textContent = product.name;
+                    productInfo.appendChild(productName);
+
+                    const productPrice = document.createElement('div');
+                    productPrice.textContent = `Цена: ₽${product.price}`;
+                    productInfo.appendChild(productPrice);
+
+                    const productCount = document.createElement('div');
+                    productCount.textContent = `Кол-во: ${product.count}`;
+                    productInfo.appendChild(productCount);
+
+                    listItem.appendChild(productInfo);
+
+                    const buyButton = document.createElement('button');
+                    buyButton.textContent = 'Купить';
+                    buyButton.addEventListener('click', async () => {
+                        const buyResponse = await fetch(`/buy/${shopId}/${product.id}`, { method: 'POST' });
+                        if (buyResponse.ok) {
+                            const updatedProducts = await buyResponse.json();
+                            displayProducts(updatedProducts);
+                            alert('Товар успешно куплен');
+                        } else {
+                            const errorMessage = await buyResponse.text();
+                            alert(`Не удалось купить товар: ${errorMessage}`);
+                        }
+                    });
+                    listItem.appendChild(buyButton);
+
+                    productList.appendChild(listItem);
+                });
+            }
+
+            // Fetch and display shop name
+            const shopsResponse = await fetch('/shops');
+            const shops = await shopsResponse.json();
+            const shop = shops.find(s => s.id === shopId);
+            if (shop) {
+                shopNameElem.textContent = `Товары магазина ${shop.name}`;
+            } else {
+                shopNameElem.textContent = 'Shop not found';
+            }
+
+            // Fetch and display products initially
+            await fetchAndDisplayProducts();
+        });
+    </script>
+</body>
+</html>

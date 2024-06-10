@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="adshop.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Добро пожаловать, Администратор!</h1>
+        <p>Вы вошли в систему как администратор. У вас есть доступ к управлению магазинами и их функциями.</p>
+
+        <!-- Форма создания нового магазина -->
+        <h2>Создание магазина</h2>
+        <form id="create-shop-form">
+            <label for="shop-name">Название магазина:</label>
+            <input type="text" id="shop-name" required><br>
+            <label for="shop-address">Адрес магазина:</label>
+            <input type="text" id="shop-address" required><br>
+            <button type="submit">Добавить магазин</button>
+        </form>
+
+        <hr>
+
+        <!-- Форма создания нового товара -->
+        <h2>Создание нового товара</h2>
+        <form id="create-product-form">
+            <!-- Cписок выбора магазина -->
+            <label for="shop-select">Выбрать магазин:</label><br>
+            <select id="shop-select" required>
+                <!-- Shops will be appended here -->
+            </select><br>
+            <label for="product-name">Название товара:</label>
+            <input type="text" id="product-name" required><br>
+            <label for="product-price">Цена товара:</label>
+            <input type="number" id="product-price" required><br>
+            <label for="product-count">Кол-во товара:</label>
+            <input type="number" id="product-count" required><br>
+            <label for="product-description">Описание:</label>
+            <textarea id="product-description" required></textarea><br>
+            <button type="submit">Добавление товара</button>
+        </form>
+
+        <h2>Удаление магазина</h2>
+        <form id="delete-shop-form">
+            <label for="delete-shop-select">Выбрать магазин для удаления:</label><br>
+            <select id="delete-shop-select" required>
+                <!-- Shops will be appended here -->
+            </select><br>
+            <button type="button" onclick="deleteShop()">Удалить магазин</button>
+        </form>
+
+        <div id="products-container"></div>
+
+        <a href="/login">Выход</a>
+    </div>
+
+    <script>
+        // Функция для загрузки списка магазинов в выпадающий список
+        async function loadShops() {
+            try {
+                const response = await fetch('/shops');
+                const shops = await response.json();
+
+                console.log("Полученные магазины:", shops); // Лог для проверки данных
+
+                const shopSelect = document.getElementById('shop-select');
+                const deleteShopSelect = document.getElementById('delete-shop-select');
+
+                shopSelect.innerHTML = '';
+                deleteShopSelect.innerHTML = '';
+
+                if (shops.length === 0) {
+                    console.warn('Список магазинов пуст');
+                }
+
+                shops.forEach(shop => {
+                    const option = document.createElement('option');
+                    option.value = shop.id;
+                    option.textContent = shop.name;
+                    shopSelect.appendChild(option);
+
+                    const deleteOption = document.createElement('option');
+                    deleteOption.value = shop.id;
+                    deleteOption.textContent = shop.name;
+                    deleteShopSelect.appendChild(deleteOption);
+                });
+            } catch (error) {
+                console.error('Ошибка при загрузке магазинов:', error);
+            }
+        }
+
+        // Функция для создания нового товара
+        async function createProduct(event) {
+            event.preventDefault();
+            const shopId = document.getElementById('shop-select').value;
+            const productName = document.getElementById('product-name').value;
+            const productPrice = document.getElementById('product-price').value;
+            const productCount = document.getElementById('product-count').value;
+            const productDescription = document.getElementById('product-description').value;
+            try {
+                const response = await fetch(`/adshop/${shopId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: productName, price: productPrice, count: productCount, description: productDescription })
+                });
+                if (response.ok) {
+                    alert('Товар успешно создан!');
+                    // После создания товара, обновляем список товаров в магазине
+                    loadProductsInShop(shopId);
+                } else {
+                    console.error('Failed to create product:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Ошибка при создании товара:', error);
+            }
+        }
+
+        // Функция для удаления магазина
+        async function deleteShop() {
+            const shopId = document.getElementById('delete-shop-select').value;
+            try {
+                const response = await fetch(`/deleteshop/${shopId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    alert('Магазин успешно удален!');
+                    // После удаления магазина, обновляем список магазинов
+                    loadShops();
+                } else {
+                    console.error('Не удалось удалить магазин:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Ошибка при удалении магазина:', error);
+            }
+        }
+
+        // Функция для изменения данных о товаре
+        async function editProduct(shopId, productId, updatedProduct) {
+            try {
+                const response = await fetch(`/adshop/${shopId}/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedProduct)
+                });
+                if (response.ok) {
+                    alert('Данные о товаре успешно обновлены!');
+                    // После изменения товара, обновляем список товаров в магазине
+                    loadProductsInShop(shopId);
+                } else {
+                    console.error('Failed to update product:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Ошибка при обновлении товара:', error);
+            }
+        }
+
+        // Функция для отображения формы редактирования товара
+        function showEditForm(shopId, productId, productName, productPrice, productCount, productDescription) {
+            const editForm = document.createElement('form');
+            editForm.innerHTML = `
+                        <h2>Изменение данных о товаре</h2>
+                        <label for="edit-product-name">Название товара:</label>
+                        <input type="text" id="edit-product-name" value="${productName}" required><br>
+                        <label for="edit-product-price">Цена товара:</label>
+                        <input type="number" id="edit-product-price" value="${productPrice}" required><br>
+                        <label for="edit-product-count">Кол-во товара:</label>
+                        <input type="number" id="edit-product-count" value="${productCount}" required><br>
+                        <label for="edit-product-description">Описание:</label>
+                        <textarea id="edit-product-description" required>${productDescription}</textarea><br>
+                        <button type="button" onclick="submitEditForm('${shopId}', '${productId}')">Сохранить изменения</button>
+                        <button type="button" onclick="cancelEditForm()">Отмена</button>
+                    `;
+            const productsContainer = document.getElementById('products-container');
+            productsContainer.innerHTML = '';
+            productsContainer.appendChild(editForm);
+        }
+
+        // Функция для отправки формы редактирования товара
+        function submitEditForm(shopId, productId) {
+            const updatedProduct = {
+                name: document.getElementById('edit-product-name').value,
+                price: document.getElementById('edit-product-price').value,
+                count: document.getElementById('edit-product-count').value,
+                description: document.getElementById('edit-product-description').value
+            };
+            editProduct(shopId, productId, updatedProduct);
+        }
+
+        // Функция для отмены редактирования товара
+        function cancelEditForm() {
+            loadShops();
+        }
+
+        // Функция для создания нового магазина
+        async function createShop(event) {
+            event.preventDefault();
+            const shopName = document.getElementById('shop-name').value;
+            const shopAddress = document.getElementById('shop-address').value;
+            try {
+                const response = await fetch('/adshop', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: shopName, address: shopAddress })
+                });
+                if (response.ok) {
+                    alert('Магазин успешно создан!');
+                    // После создания магазина, обновляем список магазинов
+                    loadShops();
+                } else {
+                    console.error('Не удалось создать магазин:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Ошибка при создании магазина:', error);
+            }
+        }
+
+        // Обработчик события загрузки страницы
+        window.onload = function () {
+            loadShops();
+            // Привязываем событие submit формы создания магазина
+            document.getElementById('create-shop-form').addEventListener('submit', createShop);
+            // Привязываем событие submit формы создания товара
+            document.getElementById('create-product-form').addEventListener('submit', createProduct);
+        };
+    </script>
+</body>
+</html>
